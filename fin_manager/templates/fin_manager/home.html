@@ -1,19 +1,15 @@
-<html>
-	<head>
-		<title>Home</title>
-	</head>
-	<body>
-	{% block content %}
-		{% if user.is_authenticated %}
-    			<h2>Welcome, {{ user.username }}!</h2>
-		{% else %}
-			<h2>Welcome! <br> 
-				<a href="{% url 'register' %}">Register</a> or
-				<a href="{% url 'login' %}">Login</a>
-				on our site </h2>
-		{% endif %}
-	{% endblock %}
+{% extends 'base.html' %}
 
+{% block title %}Home - Finance Manager{% endblock %}
 
-	</body>
-</html>
+{% block content %}
+    <div class="text-center">
+        {% if user.is_authenticated %}
+            <h2 class="text-success">Welcome, {{ user.username }}!</h2>
+        {% else %}
+            <h2>Welcome to Finance Manager!</h2>
+            <a class="btn btn-primary" href="{% url 'register' %}">Register</a>
+            <a class="btn btn-secondary" href="{% url 'login' %}">Login</a>
+        {% endif %}
+    </div>
+{% endblock %}

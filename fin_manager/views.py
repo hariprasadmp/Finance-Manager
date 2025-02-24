@@ -81,3 +81,59 @@ class ExpenseListView(FormView):
         
         context['expense_data'] = expense_data
         return context
+
+def dashboard(request):
+    user = request.user
+
+    account, _ = Account.objects.get_or_create(user=user)
+
+    # Fetch all liabilities (expenses) related to this account
+    liabilities = account.liability_list.all()
+
+    # Calculate total expenses
+    total_expenses = liabilities.aggregate(Sum('amount'))['amount__sum'] or 0
+
+    # Calculate total income (Assuming income is stored in 'balance' field)
+    total_income = account.balance  
+
+    # Calculate remaining balance
+    remaining_balance = total_income - total_expenses
+
+    # Group expenses by category
+    category_expenses = liabilities.values('name').annotate(total=Sum('amount'))
+
+    # Format data for the chart
+    expense_chart_data = {
+        'labels': [item['name'] for item in category_expenses], 
+        'values': [item['total'] for item in category_expenses]
+    }
+
+    context = {
+        'total_income': total_income,
+        'total_expenses': total_expenses,
+        'remaining_balance': remaining_balance,
+        'expense_chart_data': expense_chart_data,
+        'liabilities': liabilities,
+    }
+
+    return render(request, 'fin_manager/dashboard.html', context)
+
+@login_required(login_url='/accounts/login/')  # Redirect to login if not authenticated
+def dashboard(request):
+    user = request.user
+    
+    if not user.is_authenticated:
+        return redirect('/accounts/login/')  # Redirect unauthenticated users
+
+    accounts = Account.objects.filter(user=user)
+
+    # Fetch total expenses grouped by category
+    expense_data = accounts.values('liability_list__name').annotate(total=Sum('liability_list__amount'))
+
+    # Prepare data for Chart.js
+    expense_chart_data = {
+        "labels": [entry["liability_list__name"] for entry in expense_data],
+        "values": [entry["total"] for entry in expense_data]
+    }
+
+    return render(request, 'fin_manager/dashboard.html', {'expense_chart_data': expense_chart_data})

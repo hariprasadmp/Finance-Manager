@@ -17,10 +17,14 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from fin_manager.views import register
+from fin_manager.views import dashboard  # Import the dashboard view
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('fin_manager.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/register/', register, name='register'),
+    path('dashboard/', dashboard, name='dashboard'),
+    path('accounts/', include('allauth.urls')),
 ]
